@@ -4,7 +4,7 @@ Docker image running a GUI application accessible over RDP. Audio in the applica
 
 The end user runs the container first, and then runs a remote desktop client to open the window of the GUI application remotely. 
 
-By containerizing a GUI app in this way we can easily run a GUI application on any OS supporting a RDP client. 
+By containerizing a GUI app in this way we can easily run a GUI application on any OS supporting a RDP client and running docker.
 
 The default GUI application is [firefox](http://mozilla.org/firefox/) which opens youtube playing 'David Bowie - Absolute Beginners'. But you can easily adapt it by installing a custom gui app in `bin/guiprogram` by adapting the `Dockerfile`. The `resources/bin/` folder contains several examples. These alternative examples our also in the Dockerfile but commented out.
 
