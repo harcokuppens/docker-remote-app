@@ -1,11 +1,12 @@
-# docker-remote-app
+# Docker-remote-app: containerized GUI app 
 
-Docker image running a GUI application accessible over RDP. Audio in the application is supported over the RDP connection.
+Docker image running a GUI application accessible over RDP. Audio in the application is supported over the RDP connection. Copy and pasting between the application and your local system is also supported.
 
 The end user runs the container first, and then runs a remote desktop client to open the window of the GUI application remotely. 
 
-The default GUI application is [firefox](http://mozilla.org/firefox/). But you can easily adapt it
-by installing a custom gui app in `bin/guiprogram` by adapting the `Dockerfile`.
+By containerizing a GUI app in this way we can easily run a GUI application on any OS supporting a RDP client. 
+
+The default GUI application is [firefox](http://mozilla.org/firefox/) which opens youtube playing 'David Bowie - Absolute Beginners'. But you can easily adapt it by installing a custom gui app in `bin/guiprogram` by adapting the `Dockerfile`. The `resources/bin/` folder contains several examples. These alternative examples our also in the Dockerfile but commented out.
 
 To run the GUI application the Docker image runs a RDP server using [xrdp](http://xrdp.org) on Ubuntu. Instead of running the GUI application directly in the xrdp session the GUI application is run within the window manager [openbox](http://openbox.org/). This gives the extra flexibility to easily run also other applications. 
 
