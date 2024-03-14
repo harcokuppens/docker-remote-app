@@ -1,73 +1,31 @@
-# docker-remote-desktop
+# docker-remote-app
 
-[![build](https://github.com/scottyhardy/docker-remote-desktop/actions/workflows/build.yml/badge.svg)](https://github.com/scottyhardy/docker-remote-desktop/actions/workflows/build.yml)
+Docker image running a GUI application accessible over RDP. Audio in the application is supported over the RDP connection.
 
-Docker image with RDP server using [xrdp](http://xrdp.org) on Ubuntu with [XFCE](https://xfce.org).
+The end user runs the container first, and then runs a remote desktop client to open the window of the GUI application remotely. 
 
-Images are built weekly using the Ubuntu Docker image with the 'latest' tag.
+The default GUI application is [firefox](http://mozilla.org/firefox/). But you can easily adapt it
+by installing a custom gui app in `bin/guiprogram` by adapting the `Dockerfile`.
 
-## Running manually with `docker` commands
+To run the GUI application the Docker image runs a RDP server using [xrdp](http://xrdp.org) on Ubuntu. Instead of running the GUI application directly in the xrdp session the GUI application is run within the window manager [openbox](http://openbox.org/). This gives the extra flexibility to easily run also other applications. 
 
-Download the latest version of the image:
+This image is based on a fork of the [docker-remote-desktop](https://github.com/scottyhardy/docker-remote-desktop/) image.
 
-```bash
-docker pull scottyhardy/docker-remote-desktop
-```
 
-To run with an interactive bash session:
+## Persistence of GUI application
 
-```bash
-docker run -it \
-    --rm \
-    --hostname="$(hostname)" \
-    --publish="3389:3389/tcp" \
-    --name="remote-desktop" \
-    scottyhardy/docker-remote-desktop:latest /bin/bash
-```
+The GUI application is automatically launched on the first RDP connection and persists on running when the RDP connection is disconnected and reconnected again. In case the GUI application exits for some reason, it will automatically be relaunched in the container.
 
-To start as a detached daemon:
 
-```bash
-docker run --detach \
-    --rm \
-    --hostname="$(hostname)" \
-    --publish="3389:3389/tcp" \
-    --name="remote-desktop" \
-    scottyhardy/docker-remote-desktop:latest
-```
 
-To stop the detached container:
-
-```bash
-docker kill remote-desktop
-```
-
-## Connecting with an RDP client
-
-All Windows desktops and servers come with Remote Desktop pre-installed and macOS users can download the Microsoft Remote Desktop application for free from the App Store.  For Linux users, I'd suggest using the Remmina Remote Desktop client.
-
-For the hostname, use `localhost` if the container is hosted on the same machine you're running your Remote Desktop client on and for remote connections just use the name or IP address of the machine you are connecting to.
-NOTE: To connect to a remote machine, it will require TCP port 3389 to be exposed through the firewall.
-
-To log in, use the following default user account details:
-
-```bash
-Username: ubuntu
-Password: ubuntu
-```
-
-![Screenshot of login prompt](https://raw.githubusercontent.com/scottyhardy/docker-remote-desktop/master/screenshot_1.png)
-
-![Screenshot of XFCE desktop](https://raw.githubusercontent.com/scottyhardy/docker-remote-desktop/master/screenshot_2.png)
-
-## Building docker-remote-desktop on your own machine
+## Building docker-remote-app image on your own machine
 
 First, clone the GitHub repository:
 
 ```bash
-git clone https://github.com/scottyhardy/docker-remote-desktop.git
+git clone https://github.com/harcokuppens/docker-remote-app.git
 
-cd docker-remote-desktop
+cd docker-remote-app
 ```
 
 You can then build the image with the supplied script:
@@ -76,21 +34,13 @@ You can then build the image with the supplied script:
 ./build
 ```
 
-Or run the following `docker` command:
+To script contains a `docker` command which can also be run directly from the bash command line. 
 
-```bash
-docker build -t docker-remote-desktop .
-```
 
-## Running local images with scripts
+## Running docker-remote-app image with scripts
 
-I've created some simple scripts that give the minimum requirements for either running the container interactively or running as a detached daemon.
+I've created some simple scripts that give the minimum requirements for either running and stopping the container.
 
-To run with an interactive bash session:
-
-```bash
-./run
-```
 
 To start as a detached daemon:
 
@@ -103,3 +53,24 @@ To stop the detached container:
 ```bash
 ./stop
 ```
+To scripts contain docker commands which can also be run directly from the bash command line. 
+
+## Connecting with an RDP client
+
+All Windows desktops and servers come with Remote Desktop pre-installed and macOS users can download the Microsoft Remote Desktop application for free from the App Store.  For Linux users, I'd suggest using the Remmina Remote Desktop client.
+
+For the hostname, use `localhost` if the container is hosted on the same machine you're running your Remote Desktop client on and for remote connections just use the name or IP address of the machine you are connecting to. The RDP client connects by default to  the TCP port 3389. 
+NOTE: to connect to a remote machine, it will require TCP port 3389 to be exposed through the firewall. Thus:
+
+```bash
+Hostname: localhost
+TCP port: 3389 (default)
+```
+
+To log in, use the following default user account details:
+
+```bash
+Username: ubuntu
+Password: ubuntu
+```
+

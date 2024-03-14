@@ -1,0 +1,15 @@
+#!/bin/bash
+
+url='https://www.youtube.com/watch?v=iCJLOXqnT2I&autoplay=1'
+
+screenwidth=$(xrandr --current | grep '*' | uniq | awk '{print $1}' | cut -d 'x' -f1)
+screenheight=$(xrandr --current | grep '*' | uniq | awk '{print $1}' | cut -d 'x' -f2)
+
+# create profile
+/usr/bin/firefox  -CreateProfile default
+
+# launch firefox
+# - maximized window
+exec /usr/bin/firefox -width $screenwidth -height $screenheight "$url"
+# - fullscreen  in kiosk mode
+#exec /usr/bin/firefox -width $screenwidth -height $screenheight -kiosk "$url"

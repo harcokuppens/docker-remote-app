@@ -1,0 +1,19 @@
+#!/bin/bash
+
+cmd_option=( -e htop )
+
+screenwidth=$(xrandr --current | grep '*' | uniq | awk '{print $1}' | cut -d 'x' -f1)
+screenheight=$(xrandr --current | grep '*' | uniq | awk '{print $1}' | cut -d 'x' -f2)
+
+
+# uncomment the following to run an xterm fullscreen
+/usr/bin/xterm -xrm 'XTerm*selectToClipboard: true' "${cmd_option[@]}" &
+#xclock &
+
+pid=$!
+sleep 0.1
+# not we search on pid, because we cannot use name, because prompt in xterm changes its name
+# note: this does not work for all x applications (eg. xeyes doesn't support it)
+winid=$(xdotool search  --pid $pid)
+xdotool windowsize $winid  ${screenwidth} ${screenheight}
+wait $pid

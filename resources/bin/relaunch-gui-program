@@ -1,0 +1,80 @@
+#!/bin/bash
+
+
+# usage: relaunch GUIPROGRAM 
+#
+#    Relaunch a gui program when it exits either by normal exit (exit code 0) 
+#    or when some error happened (exit code > 0).
+#    
+#    The relaunch command can be started when logging in to a Xorg session, to
+#    make a gui program to always automatically restart whatever happens.
+#
+#    Only when you logout of the Xorg session relaunch will stop relaunching
+#    because a GUI program cannot be shown then. Which is ok, because
+#    when you login again to a new Xorg session again the relaunch command
+#    will be started again.
+# 
+#    Note: when you exit an Xorg session only gui programs get a close event.
+#          A bash script like relaunch will get no signal at all from Xorg and
+#          keeps on running even when Xorg is not running anymore. So 
+#          in the relaunch script we can check whether Xorg or the program
+#          are running or not, because relaunch will never exit if either
+#          Xorg or the program exits.
+
+        
+
+# get command to launch program
+GUI_PROGRAM_LAUNCH_CMD=( "$@" )
+
+
+# launch command in background, and determine its short ps command name
+"${GUI_PROGRAM_LAUNCH_CMD[@]}" &
+
+# get process id of command
+pid=$!
+
+# short sleep to give launch of new program to be in process table
+sleep 1
+
+# get command name (only the executable name) of that process id in process table
+# notes: 
+#  * the command name in the process can deviate from the program launching command,
+#    because the launching command can be a wrapper around the final program running
+#  * the pid of the program changes after each relaunch
+#  * however the same command name is listed in the process table no matter how often 
+#    the program is already relaunched.
+#  * so we can use the program name to easily check if the program is running no matter 
+#    how often it is already relaunched.
+GUI_PROGRAM_PS_COMM=$(ps -p $pid -o ucomm --no-headers)
+
+# relaunch uses a watch dog approach: 
+#   * no blocking on a running  program, so that we indepent of the gui program can decide what to do.
+#     A blocking approach is not good because xorg could end without ending programm. In that
+#     case we cannot do anything, until the program has ended. By watching the status of both xorg and the
+#     program without blocking we can always immediately act when their status does change.
+#   * so in while loop we periodically check the status of xorg and the program and 
+#     then act when their status does change 
+while true
+do
+  # check whether xorg and program are running
+  xorg_running=true; ps -C Xorg > /dev/null || xorg_running=false
+  #xorg_running=true; pgrep -x Xorg > /dev/null || xorg_running=false
+
+  program_running=true; ps -C "$GUI_PROGRAM_PS_COMM" > /dev/null || program_running=false
+  #echo "prog: $program_running"
+  #echo "xorg: $xorg_running"
+  
+  # depending on the running status do an action
+  #   
+  #     Xorg    program   action
+  #      0        0         exit relaunch
+  #      0        1         kill program and exit relaunch
+  #      1        0         relaunch program, and sleep until next check
+  #      1        1         do nothing, and sleep until next check
+  
+  if [[ "$xorg_running" == "false" && "$program_running" == "false"  ]] ; then break ; fi
+  if [[ "$xorg_running" == "false" && "$program_running" == "true"  ]] ; then pkill -x "$GUI_PROGRAM_PS_COMM" ; break ; fi
+  if [[ "$xorg_running" == "true" && "$program_running" == "false"  ]] ; then "${GUI_PROGRAM_LAUNCH_CMD[@]}"  &   fi       
+  sleep 3
+
+done
